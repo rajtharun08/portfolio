@@ -15,7 +15,7 @@ Pre-final year Engineering student specializing in **Computer Science and Busine
 * **javDrop:** Java multi-threaded LAN file transfer utility.
 * **HeadlineHub:** Multilingual news scraper with sentiment analysis.
 * **LinkHist:** Python-based browser history simulation API.
-* **JEditor:** Lightweight Java-based desktop text editor..
+* **JEditor:** Lightweight Java-based desktop text editor.
 ---
 
 ### Contact
