@@ -3,7 +3,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { 
   Github, Linkedin, ExternalLink, Terminal, 
   BookOpen, Trophy, Zap, GraduationCap, 
-  Layers, Mail, CheckCircle2, Code2, Binary, TrendingUp, Palette
+  Layers, Mail, CheckCircle2, Code2, Binary, TrendingUp, Palette, Database, Cpu, Globe
 } from 'lucide-react';
 
 // --- 1. NEURAL NETWORK BACKGROUND ---
@@ -152,12 +152,12 @@ const TerminalIntro = () => {
   useEffect(() => {
     if (curLine < seq.length) {
       if (curChar < seq[curLine].text.length) {
-        setTimeout(() => setCurChar(c => c + 1), 5);
+        setTimeout(() => setCurChar(c => c + 1), 6);
       } else {
-        setTimeout(() => { setLines(p => [...p, seq[curLine]]); setCurLine(l => l + 1); setCurChar(0); }, 30);
+        setTimeout(() => { setLines(p => [...p, seq[curLine]]); setCurLine(l => l + 1); setCurChar(0); }, 100);
       }
     } else {
-      setTimeout(() => setIsBooted(true), 400);
+      setTimeout(() => setIsBooted(true), 100);
     }
   }, [curLine, curChar]);
 
@@ -180,7 +180,6 @@ const TerminalIntro = () => {
   );
 };
 
-// FIXED TYPEWRITER COMPONENT (Cleanup added)
 const TypewriterName = ({ text }) => {
   const [t, setT] = useState('');
   const [idx, setIdx] = useState(0);
@@ -190,7 +189,7 @@ const TypewriterName = ({ text }) => {
         setT(p => p + text[idx]); 
         setIdx(i => i + 1); 
       }, 40); 
-      return () => clearTimeout(timer); // Cleanup function to prevent TTarun
+      return () => clearTimeout(timer); 
     } 
   }, [idx, text]);
   return <span className="text-emerald-400">{t}<span className="inline-block w-1 h-12 md:h-16 bg-emerald-400 ml-1 align-middle" /></span>;
@@ -211,15 +210,81 @@ const SimpleAvatarVisual = () => {
   );
 };
 
-const RevealSection = ({ children }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  return <motion.div ref={ref} initial={{ opacity: 0, y: 50 }} animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }} transition={{ duration: 0.8 }}>{children}</motion.div>;
+// --- 4. BINARY MATRIX STREAM COMPONENTS ---
+const MatrixRow = ({ items, direction = "left", speed = 20 }) => {
+  const [isPaused, setIsPaused] = useState(false);
+  
+  return (
+    <div 
+      className="relative overflow-hidden py-4 border-y border-white/5 group"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/[0.02] transition-colors pointer-events-none" />
+      <motion.div 
+        className="flex whitespace-nowrap gap-12"
+        animate={{ x: direction === "left" ? [0, -1000] : [-1000, 0] }}
+        transition={{ 
+          repeat: Infinity, 
+          duration: speed, 
+          ease: "linear",
+          paused: isPaused 
+        }}
+      >
+        {[...items, ...items, ...items].map((item, i) => (
+          <SkillNode key={i} name={item} />
+        ))}
+      </motion.div>
+    </div>
+  );
 };
 
-// --- 4. MAIN APP ---
+const SkillNode = ({ name }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const binaryRef = useRef("");
+
+  useEffect(() => {
+    binaryRef.current = Array.from({ length: 8 }, () => Math.round(Math.random())).join("");
+  }, []);
+
+  return (
+    <div 
+      className="relative flex items-center gap-4 cursor-default"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="font-mono text-[10px] text-emerald-500/20 select-none">
+        {binaryRef.current}
+      </div>
+      <motion.span 
+        className={`font-black italic text-2xl md:text-4xl transition-all duration-300 ${isHovered ? 'text-emerald-400 drop-shadow-[0_0_15px_#10b981]' : 'text-slate-600'}`}
+        animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
+      >
+        {name}
+      </motion.span>
+      {isHovered && (
+        <motion.div 
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="font-mono text-[9px] text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20"
+        >
+          [0x08] BUILD_STABLE
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+// --- 5. MAIN APP ---
 const App = () => {
   const [activeSection, setActiveSection] = useState('top');
+  
+  const skillTiers = {
+    tier1: ['Java', 'Python', 'DSA', 'Algorithms', 'DBMS', 'OOPs'],
+    tier2: ['Spring Boot', 'FastAPI', 'React JS', 'Flask', 'REST APIs'],
+    tier3: ['MySQL', 'SQLite', 'SQLAlchemy', 'Git', 'Maven', 'n8n']
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const sections = ['about', 'education', 'skills', 'projects', 'contact'];
@@ -247,13 +312,6 @@ const App = () => {
         <span className="[writing-mode:vertical-lr] text-[10px] font-mono tracking-[0.5em] text-slate-500 uppercase">Compile-Create-Conquer</span>
         <div className="w-[1px] h-32 bg-slate-500/50" />
       </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0b1221; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #34d399; }
-      `}} />
 
       <nav className="fixed top-0 w-full z-50 bg-[#0b1221]/90 backdrop-blur-sm border-b border-white/5">
         <div className="w-full px-8 md:px-16 h-16 flex items-center justify-between">
@@ -312,16 +370,18 @@ const App = () => {
           </div>
         </section>
 
-        <section id="skills" className="py-24 border-t border-white/5 text-left">
+        <section id="skills" className="py-24 border-t border-white/5 text-left overflow-hidden">
           <div className="flex justify-between items-end mb-16">
             <h2 className="text-4xl font-black italic text-white">Capabilities</h2>
-            <div className="text-emerald-500 font-mono text-[10px] uppercase hidden md:block tracking-widest opacity-50">// stack_v2.0_stable</div>
+            <div className="text-emerald-500 font-mono text-[10px] uppercase hidden md:block tracking-widest opacity-50">// binary_matrix_v3.0</div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 text-left">
-            <SkillCategory title="Programming" items={['Java', 'Python']} icon={Code2} />
-            <SkillCategory title="Frameworks" items={['Spring Boot', 'FastAPI', 'React JS', 'Flask']} icon={Layers} />
-            <SkillCategory title="Core CS" items={['DSA', 'Algorithms', 'DBMS', 'OOPs']} icon={Binary} />
+          
+          <div className="space-y-2 mb-20">
+            <MatrixRow items={skillTiers.tier1} direction="left" speed={25} />
+            <MatrixRow items={skillTiers.tier2} direction="right" speed={30} />
+            <MatrixRow items={skillTiers.tier3} direction="left" speed={35} />
           </div>
+
           <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 rounded-[2.5rem] bg-emerald-500/5 border border-emerald-500/20 shadow-2xl relative overflow-hidden group">
             <div className="absolute right-0 top-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity"><Trophy size={140} className="text-emerald-500" /></div>
             <div className="flex items-center justify-between mb-8 text-left">
@@ -378,27 +438,114 @@ const App = () => {
   );
 };
 
-// --- SUB-COMPONENTS (TOOLTIPS & ROADMAP) ---
-const BentoCard = ({ col, title, tech, repo, desc }) => (
-  <motion.div whileHover={{ y: -8 }} className={`${col} p-10 bg-[#0d172a] border border-white/5 rounded-[2.5rem] group hover:border-emerald-500/20 transition-all duration-700 flex flex-col justify-between min-h-[320px] text-left shadow-lg`}>
-    <div>
-       <div className="flex justify-between items-start mb-10">
-          <div className="p-4 bg-emerald-500/10 text-emerald-400 rounded-2xl"><Zap size={24} /></div>
-          <a href={repo} className="text-slate-600 hover:text-emerald-400 transition-colors"><Github size={22} /></a>
-       </div>
-       <h3 className="text-4xl font-black italic text-white leading-none group-hover:text-emerald-400 transition-colors">{title}</h3>
-       <p className="text-slate-400 text-sm mt-4">{desc}</p>
+// --- SUB-COMPONENTS (PROJECT CARDS) ---
+const CodeBackground = ({ tech, isPaused }) => {
+  const snippets = {
+    "FastAPI": "async def root(): return {'status': 'online'}\n@app.post('/shorten')\nlink = await db.create(url)\nlimit = click_limit - 1",
+    "Java": "public static void main(String[] args) {\n  Socket s = new Socket('localhost', 8080);\n  Thread t1 = new Thread(new Handler());\n}",
+    "Flask": "from flask import Flask, jsonify\napp = Flask(__name__)\n@app.route('/history')\ndef get_history():\n  return jsonify(data)",
+    "NewsAPI": "response = newsapi.get_headlines(q='tech')\nfor article in response['articles']:\n  analyze_sentiment(article['content'])",
+    "Swing": "JFrame frame = new JFrame('JEditor');\nJTextArea area = new JTextArea();\nframe.add(new JScrollPane(area));",
+    "JS": "const ctx = canvas.getContext('2d');\nanalyzer.getByteFrequencyData(data);\nrequestAnimationFrame(animate);"
+  };
+
+  const code = snippets[tech[0]] || snippets["JS"];
+
+  return (
+    <div className="absolute inset-0 overflow-hidden opacity-[0.03] pointer-events-none p-4 font-mono text-[9px] leading-relaxed whitespace-pre select-none">
+      <motion.div animate={isPaused ? {} : { y: [0, -200] }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }}>
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="mb-2">{code}</div>
+        ))}
+      </motion.div>
     </div>
-    <div className="flex flex-wrap gap-2 mt-6">
-      {tech.map((t) => (
-        <div key={t} className="relative group/tooltip">
-          <div className="px-3 py-1 bg-white/5 border border-white/5 rounded-md text-[10px] font-black text-emerald-500/60 hover:text-emerald-400 transition-all cursor-default uppercase">{t}</div>
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-emerald-500 text-[#0b1221] text-[9px] font-black rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">STACK: {t.toUpperCase()}</div>
+  );
+};
+
+const BentoCard = ({ col, title, tech, repo, desc }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [terminalStep, setTerminalStep] = useState(0); 
+  const [typedCommand, setTypedCommand] = useState("");
+  const [typedDesc, setTypedDesc] = useState("");
+  const command = "./launch_project --info";
+
+  useEffect(() => {
+    if (isHovered) {
+      setTerminalStep(1);
+      let i = 0;
+      const cmdInterval = setInterval(() => {
+        setTypedCommand(command.slice(0, i));
+        i++;
+        if (i > command.length) {
+          clearInterval(cmdInterval);
+          setTerminalStep(2);
+          let j = 0;
+          const descInterval = setInterval(() => {
+            setTypedDesc(desc.slice(0, j));
+            j++;
+            if (j > desc.length) clearInterval(descInterval);
+          }, 10);
+        }
+      }, 25);
+      return () => clearInterval(cmdInterval);
+    } else {
+      setTerminalStep(0);
+      setTypedCommand("");
+      setTypedDesc("");
+    }
+  }, [isHovered, desc]);
+
+  return (
+    <motion.div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} whileHover={{ y: -8 }} className={`${col} relative bg-[#0d172a] border border-white/10 rounded-xl group overflow-hidden transition-all duration-700 flex flex-col min-h-[320px] text-left shadow-lg`}>
+      <div className="flex items-center gap-1.5 px-4 py-3 bg-white/5 border-b border-white/5 relative z-20">
+        <div className="w-2 h-2 rounded-full bg-red-500/50" />
+        <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
+        <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
+        <span className="ml-2 text-[9px] font-mono text-slate-500 uppercase tracking-widest">{title.toLowerCase()} - bash</span>
+      </div>
+
+      <CodeBackground tech={tech} isPaused={isHovered} />
+
+      <div className="relative z-10 p-8 flex flex-col justify-between flex-1">
+        <div>
+           <div className="flex justify-between items-start mb-6">
+              <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><Zap size={20} /></div>
+              <a href={repo} target="_blank" rel="noreferrer" className="text-slate-600 hover:text-emerald-400 transition-colors"><Github size={20} /></a>
+           </div>
+           <h3 className="text-3xl font-black italic text-white leading-none group-hover:text-emerald-400 transition-colors mb-6">{title}</h3>
+           
+           <div className="font-mono text-[11px] leading-relaxed min-h-[4rem]">
+             {isHovered ? (
+               <div className="space-y-2">
+                 <div className="text-emerald-500">
+                   tharun@csbs:~$ <span className="text-white">{typedCommand}</span>
+                   {terminalStep === 1 && <span className="inline-block w-1.5 h-3 bg-emerald-500 ml-1 animate-pulse" />}
+                 </div>
+                 {terminalStep === 2 && (
+                   <div className="text-slate-300">
+                     {typedDesc}
+                     <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} className="inline-block w-2.5 h-3.5 bg-emerald-500 ml-1 align-middle">█</motion.span>
+                   </div>
+                 )}
+               </div>
+             ) : (
+               <div className="text-slate-600/30 italic">Process awaiting initialization...</div>
+             )}
+           </div>
         </div>
-      ))}
-    </div>
-  </motion.div>
-);
+
+        <div className="flex flex-wrap gap-2 mt-6">
+          {tech.map((t) => (
+            <div key={t} className="relative group/tooltip">
+              <div className="px-3 py-1 bg-white/5 border border-white/5 rounded-md text-[10px] font-black text-emerald-500/60 hover:text-emerald-400 transition-all cursor-default uppercase">{t}</div>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-emerald-500 text-[#0b1221] text-[9px] font-black rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">STACK: {t.toUpperCase()}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 const EducationNode = ({ year, title, sub, icon, isFirst, isLast }) => {
   const ref = useRef(null);
@@ -424,20 +571,6 @@ const EducationNode = ({ year, title, sub, icon, isFirst, isLast }) => {
     </div>
   );
 };
-
-const SkillCategory = ({ title, items, icon: Icon }) => (
-  <div className="p-8 rounded-[2rem] bg-[#0d172a] border border-white/5 hover:border-emerald-500/30 transition-all group relative overflow-hidden">
-    <div className="flex items-center gap-4 mb-6">
-      <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl group-hover:scale-110 transition-transform"><Icon size={20} /></div>
-      <h4 className="text-emerald-500 text-xs uppercase font-black tracking-[0.3em]">{title}</h4>
-    </div>
-    <div className="flex flex-wrap gap-3">
-      {items.map((item) => (
-        <span key={item} className="px-3 py-1 bg-white/5 border border-white/5 rounded-lg text-sm font-bold text-slate-300 group-hover:text-white transition-all">{item}</span>
-      ))}
-    </div>
-  </div>
-);
 
 const MagneticLink = ({ children, href }) => {
   const ref = useRef(null);
