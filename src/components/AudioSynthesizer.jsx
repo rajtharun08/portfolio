@@ -72,54 +72,67 @@ export const playClickTick = () => {
   } catch (e) {}
 };
 
+// Register page gesture listeners to resume AudioContext automatically on first user click/touch/keydown
+if (typeof window !== 'undefined') {
+  const resumeAudioCtx = () => {
+    if (uiAudioCtx && uiAudioCtx.state === 'suspended') {
+      uiAudioCtx.resume();
+    }
+  };
+  window.addEventListener('click', resumeAudioCtx);
+  window.addEventListener('keydown', resumeAudioCtx);
+  window.addEventListener('touchstart', resumeAudioCtx);
+}
+
 // Exported UI Sound Effect: Organic Mechanical Keyboard Keypress
 export const playKeyboardClick = () => {
   try {
     const ctx = getUiAudioCtx();
     if (ctx.state === 'suspended') ctx.resume();
 
-    // 1. Initial key cap strike (sharp transient click)
-    const clickOsc = ctx.createOscillator();
-    const clickGain = ctx.createGain();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    // Organic mechanical keyboard clack: fundamental pitch + click transient
+    const randFreq = 580 + Math.random() * 140; // woody, clicky cherry range (580Hz-720Hz)
+    const decay = 0.04 + Math.random() * 0.01; // short clack decay (40ms-50ms)
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(randFreq, ctx.currentTime);
+    // Pitch slide downwards representing key bottoming out and damping
+    osc.frequency.exponentialRampToValueAtTime(randFreq * 0.55, ctx.currentTime + decay);
+
+    // Filter: Bandpass filter to isolate the woody keyboard body clack
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(randFreq * 1.3, ctx.currentTime);
+    filter.Q.setValueAtTime(3.5, ctx.currentTime); // resonant tactile click
+
+    gain.gain.setValueAtTime(0.045, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + decay);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + decay + 0.01);
+
+    // High frequency tactile keycap click transient (the "tick/snap")
+    const snapOsc = ctx.createOscillator();
+    const snapGain = ctx.createGain();
     
-    clickOsc.type = 'triangle';
-    clickOsc.frequency.setValueAtTime(3800 + Math.random() * 800, ctx.currentTime);
+    snapOsc.type = 'triangle';
+    snapOsc.frequency.setValueAtTime(2800 + Math.random() * 1200, ctx.currentTime); 
     
-    clickGain.gain.setValueAtTime(0.025, ctx.currentTime);
-    clickGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.006); // 6ms decay
+    snapGain.gain.setValueAtTime(0.035, ctx.currentTime);
+    snapGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.01); // 10ms transient decay
     
-    clickOsc.connect(clickGain);
-    clickGain.connect(ctx.destination);
-    clickOsc.start();
-    clickOsc.stop(ctx.currentTime + 0.01);
-
-    // 2. Metallic typebar strike ring (the "tink" of the typewriter hammer)
-    const ringOsc = ctx.createOscillator();
-    const ringGain = ctx.createGain();
-    const ringFilter = ctx.createBiquadFilter();
-
-    // Randomize pitch slightly around 1600Hz - 2100Hz for organic variation
-    const ringFreq = 1600 + Math.random() * 500;
-    const ringDecay = 0.025 + Math.random() * 0.015; // 25ms to 40ms decay
-
-    ringOsc.type = 'sine';
-    ringOsc.frequency.setValueAtTime(ringFreq, ctx.currentTime);
-    // downward pitch sweep as hammer impacts and dampens
-    ringOsc.frequency.exponentialRampToValueAtTime(ringFreq * 0.75, ctx.currentTime + ringDecay);
-
-    ringFilter.type = 'bandpass';
-    ringFilter.frequency.setValueAtTime(ringFreq, ctx.currentTime);
-    ringFilter.Q.setValueAtTime(5.0, ctx.currentTime); // High resonance for metallic "tink" ring
-
-    ringGain.gain.setValueAtTime(0.035, ctx.currentTime);
-    ringGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + ringDecay);
-
-    ringOsc.connect(ringFilter);
-    ringFilter.connect(ringGain);
-    ringGain.connect(ctx.destination);
-
-    ringOsc.start();
-    ringOsc.stop(ctx.currentTime + ringDecay + 0.01);
+    snapOsc.connect(snapGain);
+    snapGain.connect(ctx.destination);
+    
+    snapOsc.start();
+    snapOsc.stop(ctx.currentTime + 0.02);
   } catch (e) {}
 };
 
