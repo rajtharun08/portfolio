@@ -5,6 +5,7 @@ import { Volume2, VolumeX, Activity } from 'lucide-react';
 let uiAudioCtx = null;
 let currentWaveform = 'triangle'; // Default oscillator type
 let activeOscillators = []; // References to currently running drone oscillators
+let noiseBuffer = null; // Cached white noise buffer for mechanical keyboard clacks
 
 const getUiAudioCtx = () => {
   if (!uiAudioCtx) {
@@ -12,6 +13,19 @@ const getUiAudioCtx = () => {
     uiAudioCtx = new AudioContext();
   }
   return uiAudioCtx;
+};
+
+const getNoiseBuffer = (ctx) => {
+  if (!noiseBuffer) {
+    const bufferSize = ctx.sampleRate * 2; // 2 seconds of noise
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    noiseBuffer = buffer;
+  }
+  return noiseBuffer;
 };
 
 // Setter to dynamically adjust the synthesizer drone chord's timbre/waveform in real-time
@@ -72,67 +86,63 @@ export const playClickTick = () => {
   } catch (e) {}
 };
 
-// Register page gesture listeners to resume AudioContext automatically on first user click/touch/keydown
-if (typeof window !== 'undefined') {
-  const resumeAudioCtx = () => {
-    if (uiAudioCtx && uiAudioCtx.state === 'suspended') {
-      uiAudioCtx.resume();
-    }
-  };
-  window.addEventListener('click', resumeAudioCtx);
-  window.addEventListener('keydown', resumeAudioCtx);
-  window.addEventListener('touchstart', resumeAudioCtx);
-}
-
 // Exported UI Sound Effect: Organic Mechanical Keyboard Keypress
 export const playKeyboardClick = () => {
   try {
     const ctx = getUiAudioCtx();
     if (ctx.state === 'suspended') ctx.resume();
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
-
-    // Organic mechanical keyboard clack: fundamental pitch + click transient
-    const randFreq = 580 + Math.random() * 140; // woody, clicky cherry range (580Hz-720Hz)
-    const decay = 0.04 + Math.random() * 0.01; // short clack decay (40ms-50ms)
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(randFreq, ctx.currentTime);
-    // Pitch slide downwards representing key bottoming out and damping
-    osc.frequency.exponentialRampToValueAtTime(randFreq * 0.55, ctx.currentTime + decay);
-
-    // Filter: Bandpass filter to isolate the woody keyboard body clack
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(randFreq * 1.3, ctx.currentTime);
-    filter.Q.setValueAtTime(3.5, ctx.currentTime); // resonant tactile click
-
-    gain.gain.setValueAtTime(0.045, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + decay);
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + decay + 0.01);
-
-    // High frequency tactile keycap click transient (the "tick/snap")
-    const snapOsc = ctx.createOscillator();
-    const snapGain = ctx.createGain();
+    const time = ctx.currentTime;
     
-    snapOsc.type = 'triangle';
-    snapOsc.frequency.setValueAtTime(2800 + Math.random() * 1200, ctx.currentTime); 
+    // --- 1. Tactile mechanical cap bottom out (noise clack) ---
+    const noiseNode = ctx.createBufferSource();
+    noiseNode.buffer = getNoiseBuffer(ctx);
     
-    snapGain.gain.setValueAtTime(0.035, ctx.currentTime);
-    snapGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.01); // 10ms transient decay
+    const noiseFilter = ctx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    // Deep clack frequency (around 120-180Hz) to sound like solid key switches
+    const filterFreq = 130 + Math.random() * 60;
+    noiseFilter.frequency.setValueAtTime(filterFreq, time);
+    noiseFilter.Q.setValueAtTime(2.0, time); 
     
-    snapOsc.connect(snapGain);
-    snapGain.connect(ctx.destination);
+    const noiseGain = ctx.createGain();
+    // Fast clack decay (about 12ms to 20ms)
+    const clackDecay = 0.012 + Math.random() * 0.008;
+    noiseGain.gain.setValueAtTime(0.32, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, time + clackDecay);
     
-    snapOsc.start();
-    snapOsc.stop(ctx.currentTime + 0.02);
+    noiseNode.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    
+    noiseNode.start(time);
+    noiseNode.stop(time + clackDecay + 0.01);
+
+    // --- 2. Metallic contact spring switch tap (switch click) ---
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    const clickFilter = ctx.createBiquadFilter();
+    
+    // Switch contact pitch is medium-high (700Hz - 1100Hz)
+    const clickFreq = 700 + Math.random() * 400;
+    clickOsc.type = 'sine';
+    clickOsc.frequency.setValueAtTime(clickFreq, time);
+    clickOsc.frequency.exponentialRampToValueAtTime(clickFreq * 0.6, time + 0.025);
+    
+    clickFilter.type = 'bandpass';
+    clickFilter.frequency.setValueAtTime(clickFreq, time);
+    clickFilter.Q.setValueAtTime(1.2, time);
+    
+    const tickDecay = 0.008 + Math.random() * 0.006; // 8ms to 14ms
+    clickGain.gain.setValueAtTime(0.038, time);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, time + tickDecay);
+    
+    clickOsc.connect(clickFilter);
+    clickFilter.connect(clickGain);
+    clickGain.connect(ctx.destination);
+    
+    clickOsc.start(time);
+    clickOsc.stop(time + tickDecay + 0.01);
   } catch (e) {}
 };
 
@@ -176,6 +186,32 @@ const AudioSynthesizer = () => {
   const gainNodeRef = useRef(null);
   const analyserRef = useRef(null);
   const animationFrameRef = useRef(null);
+
+  // Global autoplay policy unlock listener
+  useEffect(() => {
+    const unlockAudio = () => {
+      try {
+        const ctx = getUiAudioCtx();
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume().then(() => {
+            window.removeEventListener('click', unlockAudio);
+            window.removeEventListener('keydown', unlockAudio);
+            window.removeEventListener('touchstart', unlockAudio);
+          });
+        }
+      } catch (e) {}
+    };
+
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('keydown', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
+
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, []);
 
   const initAudio = () => {
     if (audioCtxRef.current) return;
