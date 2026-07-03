@@ -474,7 +474,6 @@ const App = () => {
   const [inputVal, setInputVal] = useState('');
   
   // Custom Controls
-  const [synthWave, setSynthWave] = useState('triangle');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [thinking, setThinking] = useState(false);
   const [tokenStats, setTokenStats] = useState({ time: '0.8s', tokens: '214 tokens', active: true });
@@ -1784,12 +1783,7 @@ Generating summary response.`;
     }
   };
 
-  // ─── Waveform change ──────────────────────────────────────────────────────
-  const handleWaveformChange = (wave) => {
-    setSynthWave(wave);
-    setDroneWaveform(wave);
-    playClickTick();
-  };
+
 
   // ─── Input change handler: show autocomplete when typing '/' ───────────
   const handleInputChange = (e) => {
@@ -2216,29 +2210,6 @@ Generating summary response.`;
 
         {/* Footer */}
         <div className="p-3 space-y-2" style={{ borderTop: '1px solid var(--border)' }}>
-          {/* Timbre */}
-          <div className="flex items-center gap-1.5">
-            <Volume2 size={10} style={{ color: 'var(--text-muted)' }} className="shrink-0" />
-            <span className="text-[9px] font-mono uppercase" style={{ color: 'var(--text-muted)' }}>Timbre</span>
-            <div className="flex gap-1 ml-auto">
-              {['sin', 'tri', 'saw'].map((label, i) => {
-                const waves = ['sine', 'triangle', 'sawtooth'];
-                return (
-                  <button
-                    key={label}
-                    onClick={() => handleWaveformChange(waves[i])}
-                    className="px-1.5 py-px rounded text-[8px] cursor-pointer font-mono transition-all"
-                    style={{
-                      color: synthWave === waves[i] ? 'var(--accent)' : 'var(--text-muted)',
-                      background: synthWave === waves[i] ? 'rgba(204,107,77,0.12)' : 'transparent',
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
           {/* Identity */}
           <div className="flex items-center gap-2">
             <div

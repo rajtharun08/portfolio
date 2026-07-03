@@ -72,6 +72,57 @@ export const playClickTick = () => {
   } catch (e) {}
 };
 
+// Exported UI Sound Effect: Organic Mechanical Keyboard Keypress
+export const playKeyboardClick = () => {
+  try {
+    const ctx = getUiAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    // 1. Initial key cap strike (sharp transient click)
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    
+    clickOsc.type = 'triangle';
+    clickOsc.frequency.setValueAtTime(3800 + Math.random() * 800, ctx.currentTime);
+    
+    clickGain.gain.setValueAtTime(0.025, ctx.currentTime);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.006); // 6ms decay
+    
+    clickOsc.connect(clickGain);
+    clickGain.connect(ctx.destination);
+    clickOsc.start();
+    clickOsc.stop(ctx.currentTime + 0.01);
+
+    // 2. Metallic typebar strike ring (the "tink" of the typewriter hammer)
+    const ringOsc = ctx.createOscillator();
+    const ringGain = ctx.createGain();
+    const ringFilter = ctx.createBiquadFilter();
+
+    // Randomize pitch slightly around 1600Hz - 2100Hz for organic variation
+    const ringFreq = 1600 + Math.random() * 500;
+    const ringDecay = 0.025 + Math.random() * 0.015; // 25ms to 40ms decay
+
+    ringOsc.type = 'sine';
+    ringOsc.frequency.setValueAtTime(ringFreq, ctx.currentTime);
+    // downward pitch sweep as hammer impacts and dampens
+    ringOsc.frequency.exponentialRampToValueAtTime(ringFreq * 0.75, ctx.currentTime + ringDecay);
+
+    ringFilter.type = 'bandpass';
+    ringFilter.frequency.setValueAtTime(ringFreq, ctx.currentTime);
+    ringFilter.Q.setValueAtTime(5.0, ctx.currentTime); // High resonance for metallic "tink" ring
+
+    ringGain.gain.setValueAtTime(0.035, ctx.currentTime);
+    ringGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + ringDecay);
+
+    ringOsc.connect(ringFilter);
+    ringFilter.connect(ringGain);
+    ringGain.connect(ctx.destination);
+
+    ringOsc.start();
+    ringOsc.stop(ctx.currentTime + ringDecay + 0.01);
+  } catch (e) {}
+};
+
 // Exported UI Sound Effect: Cinematic Synthesizer frequency sweep (for 3D tab flips)
 export const playSweepSynth = () => {
   try {
