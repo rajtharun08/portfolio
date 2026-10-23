@@ -159,7 +159,7 @@ Panimalar Engineering College, Chennai
 I'm a systems-focused engineer passionate about network socket pipelines, multithreading, and competitive algorithmic challenges. I bridge technical scalability with business requirements — building tools people actually use.
 
 Core stack: Java · Python · FastAPI · React · Sockets
-Competitive: 300+ LeetCode problems · SIH 2024 Finalist`;
+Competitive: 300+ LeetCode problems · Best Paper Presenter (PECTEAM '26)`;
 
 // ─── Slash command registry ───────────────────────────────────────────────
 const SLASH_COMMANDS = [
@@ -1082,16 +1082,16 @@ const App = () => {
               </div>
             </div>
 
-            {/* Hackathon */}
+            {/* Best Paper Award */}
             <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-all group">
               <div className="flex items-start gap-3">
-                <span className="text-2xl">⚡</span>
+                <span className="text-2xl">🏆</span>
                 <div>
-                  <h3 className="text-sm font-semibold text-white group-hover:text-[#d97706] transition-colors">Hackathon Finalist — Smart India Hackathon</h3>
-                  <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">Team selected at college level for SIH 2024. Built a real-time P2P file-sharing solution using socket engineering.</p>
+                  <h3 className="text-sm font-semibold text-white group-hover:text-[#d97706] transition-colors">Best Paper Presenter — PECTEAM '26</h3>
+                  <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">Recognized at an International Conference for designing ParkMate, a software-driven smart parking reservation system.</p>
                   <div className="flex gap-2 mt-2">
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#d97706]/10 text-[#d97706] border border-[#d97706]/20 font-mono">Finalist</span>
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-stone-400 border border-white/5 font-mono">SIH 2024</span>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#d97706]/10 text-[#d97706] border border-[#d97706]/20 font-mono">Award</span>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-stone-400 border border-white/5 font-mono">Conference</span>
                   </div>
                 </div>
               </div>
@@ -1458,7 +1458,7 @@ Generating summary response.`;
             <div>
               <ToolExecutionBlock 
                 label="scan achievements_index.db" 
-                detailCode={`[db] SELECT * FROM awards WHERE candidate = 'Tharun R'\n[db] Query completed: 3 rows returned (45ms)\n  - LeetCode 300+\n  - SIH 2024 Finalist\n  - NPTEL Elite`}
+                detailCode={`[db] SELECT * FROM awards WHERE candidate = 'Tharun R'\n[db] Query completed: 3 rows returned (45ms)\n  - LeetCode 300+\n  - Best Paper Presenter (PECTEAM '26)\n  - NPTEL Elite`}
               />
               {renderAchievementsNode()}
             </div>
@@ -1633,7 +1633,7 @@ Generating summary response.`;
           <div>
             <ToolExecutionBlock 
               label="scan achievements_index.db" 
-              detailCode={`[db] SELECT * FROM awards WHERE candidate = 'Tharun R'\n[db] Query completed: 3 rows returned (45ms)\n  - LeetCode 300+\n  - SIH 2024 Finalist\n  - NPTEL Elite`}
+              detailCode={`[db] SELECT * FROM awards WHERE candidate = 'Tharun R'\n[db] Query completed: 3 rows returned (45ms)\n  - LeetCode 300+\n  - Best Paper Presenter (PECTEAM '26)\n  - NPTEL Elite`}
             />
             {renderAchievementsNode()}
           </div>
@@ -1929,7 +1929,7 @@ Generating summary response.`;
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-stone-600 font-mono">300+ LeetCode problems solved · SIH 2024 Finalist · NPTEL Java Elite</p>
+        <p className="text-[10px] text-stone-600 font-mono">300+ LeetCode problems solved · Best Paper Presenter (PECTEAM '26) · NPTEL Java Elite</p>
       </div>
     );
   };
