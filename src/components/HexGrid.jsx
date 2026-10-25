@@ -28,7 +28,25 @@ const SKILLS = [
 ];
 
 const HexGrid = () => {
+  const containerRef = React.useRef(null);
+  const [scale, setScale] = React.useState(1);
   const [hoveredNode, setHoveredNode] = useState(null);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        if (w < 600) {
+          setScale(Math.max(0.48, Math.min(1, (w - 16) / 600)));
+        } else {
+          setScale(1);
+        }
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Helper to determine if a line path should be highlighted
   const isLineHighlighted = (fromNodeId, toNodeId) => {
@@ -42,8 +60,20 @@ const HexGrid = () => {
   };
 
   return (
-    <div className="relative w-full max-w-[600px] h-[520px] mx-auto select-none p-4 overflow-hidden rounded-3xl bg-transparent">
-      
+    <div 
+      ref={containerRef}
+      className="relative w-full max-w-[600px] mx-auto select-none overflow-hidden rounded-3xl bg-transparent flex items-center justify-center"
+      style={{ height: `${Math.round(520 * scale)}px` }}
+    >
+      <div 
+        className="relative shrink-0"
+        style={{
+          width: '600px',
+          height: '520px',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top center'
+        }}
+      >
       {/* SVG Connecting Lines Layer */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
         <defs>
@@ -136,7 +166,7 @@ const HexGrid = () => {
               <motion.div
                 onMouseEnter={() => { setHoveredNode(node.id); playHoverBeep(); }}
                 onMouseLeave={() => setHoveredNode(null)}
-                onClick={playClickTick}
+                onClick={() => { setHoveredNode(prev => prev === node.id ? null : node.id); playClickTick(); }}
                 whileHover={{ scale: 1.08, y: -2 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 className="w-full h-full flex flex-col items-center justify-center text-center p-2 relative"
@@ -171,6 +201,7 @@ const HexGrid = () => {
             </motion.div>
           );
         })}
+      </div>
       </div>
     </div>
   );

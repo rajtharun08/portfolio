@@ -27,9 +27,23 @@ const SkillSphere3D = () => {
   const dragStart = useRef({ x: 0, y: 0 });
   const velocity = useRef({ x: 0.8, y: 0.8 }); // Auto rotation velocity
   const mousePos = useRef({ x: 0, y: 0 });
+  const [currentRadius, setCurrentRadius] = useState(130);
 
-  const radius = 130; // Radius of sphere
   const focalLength = 320; // Perspective focal depth
+
+  // Responsive radius adjustment
+  useEffect(() => {
+    const checkRadius = () => {
+      if (window.innerWidth < 640) {
+        setCurrentRadius(105);
+      } else {
+        setCurrentRadius(130);
+      }
+    };
+    checkRadius();
+    window.addEventListener('resize', checkRadius);
+    return () => window.removeEventListener('resize', checkRadius);
+  }, []);
 
   // Generate initial coordinates on sphere using Fibonacci spiral distribution
   useEffect(() => {
@@ -40,9 +54,9 @@ const SkillSphere3D = () => {
 
       return {
         ...skill,
-        x: radius * Math.sin(phi) * Math.cos(theta),
-        y: radius * Math.sin(phi) * Math.sin(theta),
-        z: radius * Math.cos(phi),
+        x: currentRadius * Math.sin(phi) * Math.cos(theta),
+        y: currentRadius * Math.sin(phi) * Math.sin(theta),
+        z: currentRadius * Math.cos(phi),
         projX: 0,
         projY: 0,
         scale: 1,
@@ -50,9 +64,9 @@ const SkillSphere3D = () => {
       };
     });
     setTags(newTags);
-  }, []);
+  }, [currentRadius]);
 
-  // Drag interaction handlers
+  // Mouse Drag interaction handlers
   const handleMouseDown = (e) => {
     setIsDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY };
@@ -80,6 +94,28 @@ const SkillSphere3D = () => {
   };
 
   const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Touch Drag interaction handlers for mobile
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches[0]) {
+      setIsDragging(true);
+      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      playClickTick();
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (isDragging && e.touches && e.touches[0]) {
+      const dx = e.touches[0].clientX - dragStart.current.x;
+      const dy = e.touches[0].clientY - dragStart.current.y;
+      velocity.current = { x: dx * 0.05, y: dy * 0.05 };
+      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handleTouchEnd = () => {
     setIsDragging(false);
   };
 
@@ -147,7 +183,10 @@ const SkillSphere3D = () => {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      className="relative w-full max-w-[500px] h-[360px] mx-auto flex items-center justify-center cursor-grab active:cursor-grabbing select-none overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="relative w-full max-w-[500px] h-[300px] sm:h-[360px] mx-auto flex items-center justify-center cursor-grab active:cursor-grabbing select-none overflow-hidden touch-pan-y"
     >
       {/* 3D Grid backdrop details */}
       <div className="absolute w-64 h-64 rounded-full border border-emerald-500/5 pointer-events-none" />

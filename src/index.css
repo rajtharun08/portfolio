@@ -31,6 +31,9 @@
 /* ─── Base ──────────────────────────────────────────────────────────────── */
 html, body, #root {
   height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  width: 100%;
   margin: 0;
   padding: 0;
   background-color: var(--bg-main);
@@ -39,6 +42,7 @@ html, body, #root {
   font-size: 14px;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* ─── AI Response Typography — Claude's body serif voice ────────────────── */
@@ -272,9 +276,11 @@ html, body, #root {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Custom Terracotta SVG Cursor styling */
-body, html, #root, a, button, textarea, input, [role="button"], label, select {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23cc6b4d" stroke="%23cc6b4d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(-25deg); transform-origin: 3px 3px;"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>') 3 3, auto;
+/* Custom Terracotta SVG Cursor styling (Desktop / Mouse only) */
+@media (pointer: fine) {
+  body, html, #root, a, button, textarea, input, [role="button"], label, select {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23cc6b4d" stroke="%23cc6b4d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(-25deg); transform-origin: 3px 3px;"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>') 3 3, auto;
+  }
 }
 
 /* Hide user cursor during tour */

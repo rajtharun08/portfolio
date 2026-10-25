@@ -127,7 +127,7 @@ const TimelineCard = ({ item, isLeft }) => {
         }}
         initial={{ opacity: 0, y: 35, rotateY: isLeft ? 15 : -15 }}
         whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
-        viewport={{ once: true, margin: '-100px' }}
+        viewport={{ once: true, margin: '-20px' }}
         transition={{ type: 'spring', stiffness: 100, damping: 15 }}
         className={`w-[calc(100%-3rem)] ml-12 md:ml-0 md:w-[45%] glass-panel rounded-2xl p-5 border border-white/5 cursor-pointer hover:border-accent-primary/25 relative overflow-hidden transition-all duration-300 ${
           expanded ? 'border-accent-primary/45 bg-[#0a1122]/55' : ''

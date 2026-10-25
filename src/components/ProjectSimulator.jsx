@@ -20,22 +20,22 @@ const ProjectSimulator = ({ projectId, onClose }) => {
   return (
     <div 
       onClick={handleBackdropClick}
-      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-4"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ type: 'spring', damping: 20 }}
-        className="w-full max-w-2xl bg-[#080e1b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[550px] relative"
+        className="w-full max-w-2xl bg-[#080e1b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[90dvh] max-h-[580px] relative"
       >
         {/* Window Chrome Titlebar */}
-        <div className="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5">
+        <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 bg-white/5 border-b border-white/5">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-rose-500/80 cursor-pointer block hover:scale-105" onClick={onClose} />
             <span className="w-3 h-3 rounded-full bg-amber-500/80 block" />
             <span className="w-3 h-3 rounded-full bg-emerald-500/80 block" />
-            <span className="text-[10px] font-mono text-text-secondary/60 uppercase tracking-widest ml-2">
+            <span className="text-[10px] font-mono text-text-secondary/60 uppercase tracking-widest ml-2 truncate max-w-[170px] sm:max-w-none">
               SYSTEM: SIMULATOR // {projectId.toUpperCase()}
             </span>
           </div>
@@ -48,7 +48,7 @@ const ProjectSimulator = ({ projectId, onClose }) => {
         </div>
 
         {/* Simulator Viewport */}
-        <div className="flex-1 overflow-y-auto p-6 relative">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 relative">
           {projectId === 'ghostlink' && <GhostLinkSim />}
           {projectId === 'javdrop' && <JavDropSim />}
           {projectId === 'linkhist' && <LinkHistSim />}

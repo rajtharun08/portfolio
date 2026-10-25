@@ -35,6 +35,15 @@ const ED_DATA = [
 
 const PerspectiveTimeline = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const touchStartX = React.useRef(0);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const nextCard = () => {
     playClickTick();
@@ -46,8 +55,28 @@ const PerspectiveTimeline = () => {
     setActiveIndex((prev) => (prev - 1 + ED_DATA.length) % ED_DATA.length);
   };
 
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches[0]) {
+      touchStartX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.changedTouches && e.changedTouches[0]) {
+      const diffX = touchStartX.current - e.changedTouches[0].clientX;
+      if (Math.abs(diffX) > 40) {
+        if (diffX > 0) nextCard();
+        else prevCard();
+      }
+    }
+  };
+
   return (
-    <div className="relative w-full max-w-[650px] h-[380px] mx-auto flex flex-col justify-between items-center select-none pt-8">
+    <div 
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative w-full max-w-[650px] h-[380px] mx-auto flex flex-col justify-between items-center select-none pt-4 sm:pt-8 overflow-hidden sm:overflow-visible"
+    >
       {/* 3D Curved Stack Container */}
       <div 
         className="relative w-full h-[280px] flex items-center justify-center"
@@ -63,22 +92,22 @@ const PerspectiveTimeline = () => {
 
           const isActive = diff === 0;
 
-          // Trigonometric mapping along a 3D circular arc in depth
-          const angle = diff * 0.72; // Arc spacing angle
-          const rad = 240; // Arc radius
+          // Trigonometric mapping along a 3D circular arc in depth (mobile adaptive, PC exact)
+          const angle = diff * (isMobile ? 0.65 : 0.72);
+          const rad = isMobile ? 95 : 240;
           
           const translateX = Math.sin(angle) * rad;
-          const translateZ = -Math.abs(Math.sin(angle * 0.5)) * 140 - (isActive ? 0 : 50);
-          const rotateY = -diff * 35; // Tilt cards away from camera
+          const translateZ = -Math.abs(Math.sin(angle * 0.5)) * (isMobile ? 90 : 140) - (isActive ? 0 : (isMobile ? 35 : 50));
+          const rotateY = -diff * (isMobile ? 22 : 35);
           
-          const scale = isActive ? 1.0 : 0.85;
+          const scale = isActive ? 1.0 : (isMobile ? 0.88 : 0.85);
           const opacity = isActive ? 1.0 : 0.15;
           const zIndex = isActive ? 30 : 10;
 
           return (
             <motion.div
               key={card.id}
-              className="absolute w-[290px] md:w-[350px] h-[220px] rounded-3xl p-6 glass-panel flex flex-col justify-between border cursor-pointer select-none"
+              className="absolute w-[265px] xs:w-[290px] md:w-[350px] h-[220px] rounded-3xl p-5 sm:p-6 glass-panel flex flex-col justify-between border cursor-pointer select-none"
               style={{
                 transformStyle: "preserve-3d",
                 zIndex,

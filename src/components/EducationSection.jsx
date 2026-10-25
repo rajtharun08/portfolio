@@ -96,7 +96,7 @@ const Interactive3DCard = ({ item }) => {
         transformStyle: 'preserve-3d',
         perspective: 1000
       }}
-      className="relative w-full glass-panel rounded-3xl border border-white/5 bg-[#0b101e]/35 p-6 flex flex-col justify-between h-[280px] overflow-hidden group select-none cursor-default transition-all duration-300 hover:border-accent-primary/25"
+      className="relative w-full glass-panel rounded-3xl border border-white/5 bg-[#0b101e]/35 p-5 sm:p-6 flex flex-col justify-between min-h-[280px] h-auto overflow-hidden group select-none cursor-default transition-all duration-300 hover:border-accent-primary/25"
     >
       {/* Laser Border Overlay */}
       <div className="absolute inset-0 border-1.5 border-transparent group-hover:border-accent-primary/20 rounded-3xl pointer-events-none transition-colors" />

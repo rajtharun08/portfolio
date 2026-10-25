@@ -107,7 +107,10 @@ const BentoCard = ({ title, tech, repo, desc }) => {
                 {terminalStep === 2 && <div className="text-zinc-400 mt-1">{typedDesc}</div>}
               </div>
             ) : (
-              <span className="text-zinc-600 italic">Hover to scan repository Spec...</span>
+              <>
+                <span className="hidden md:inline text-zinc-600 italic">Hover to scan repository Spec...</span>
+                <span className="md:hidden text-zinc-400 leading-tight block">{desc}</span>
+              </>
             )}
           </div>
         </div>
@@ -118,7 +121,7 @@ const BentoCard = ({ title, tech, repo, desc }) => {
               <span key={t} className="px-1.5 py-0.5 bg-white/5 border border-white/5 rounded text-[7.5px] text-accent-primary uppercase font-bold">{t}</span>
             ))}
           </div>
-          <span className="text-[7.5px] font-bold text-accent-primary flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[7.5px] font-bold text-accent-primary flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             GET CODE <ArrowRight size={7} />
           </span>
         </div>
@@ -303,7 +306,7 @@ Generating summary response.`;
           onClick={startScan}
           className="flex items-center gap-2 text-[11px] text-stone-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/[0.07] hover:bg-white/[0.04] transition-all cursor-pointer font-sans"
         >
-          <span>Press Enter or click to open bio.pdf</span>
+          <span>Press Enter, click, or tap to open bio.pdf</span>
           <ArrowRight size={11} />
         </button>
       )}
@@ -544,8 +547,11 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleEscapeKey);
   }, [tourActive]);
 
-  // Auto-trigger tour on mount
+  // Auto-trigger tour on mount (desktop only)
   useEffect(() => {
+    const isMobile = window.innerWidth < 1024 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    if (isMobile) return;
+
     const timer = setTimeout(() => {
       startAutoTour();
     }, 600);
@@ -553,6 +559,9 @@ const App = () => {
   }, []);
 
   const startAutoTour = async () => {
+    const isMobile = window.innerWidth < 1024 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    if (isMobile) return;
+
     // Reset state & go to overview (Welcome page)
     setActiveThread('overview');
     setAttachedFile(null);
@@ -2119,7 +2128,7 @@ Generating summary response.`;
   );
 
   return (
-    <div className={`h-screen w-screen flex bg-bg-dark overflow-hidden relative select-none ${tourActive ? 'tour-cursor-hidden' : ''}`}>
+    <div className={`h-[100dvh] min-h-[100dvh] w-full flex bg-bg-dark overflow-hidden relative ${tourActive ? 'tour-cursor-hidden select-none' : ''}`}>
       <AnimatePresence>
         {showIntro && (
           <motion.div
@@ -2133,47 +2142,72 @@ Generating summary response.`;
         )}
       </AnimatePresence>
       
-      {/* ================= MOBILE HEADER ================= */}
-      <div className="no-print lg:hidden absolute top-0 left-0 right-0 h-12 bg-[#1a1918] border-b border-white/5 flex items-center justify-between px-4 z-40">
+      {/* ================= MOBILE HEADER (Claude style) ================= */}
+      <div className="no-print lg:hidden fixed top-0 left-0 right-0 h-12 bg-[#171717] border-b border-white/5 flex items-center justify-between px-3.5 z-40">
         <button 
           onClick={() => { playClickTick(); setMobileMenuOpen(!mobileMenuOpen); }}
-          className="text-zinc-400 hover:text-white cursor-pointer"
+          className="p-1.5 -ml-1 text-zinc-400 hover:text-white cursor-pointer active:scale-95 transition-transform"
+          aria-label="Toggle navigation menu"
         >
           {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <span className="text-sm font-mono font-bold text-white tracking-tight">&lt;/Tharun&gt;</span>
         <button
           onClick={handleNewChat}
-          className="text-zinc-400 hover:text-white cursor-pointer"
+          className="p-1.5 -mr-1 text-zinc-400 hover:text-white cursor-pointer active:scale-95 transition-transform"
+          aria-label="New conversation"
         >
-          <Plus size={18} />
+          <Plus size={19} />
         </button>
       </div>
 
+      {/* Mobile Drawer Backdrop */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setMobileMenuOpen(false)}
+            className="no-print lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40"
+          />
+        )}
+      </AnimatePresence>
+
       {/* ================= LEFT SIDEBAR ================= */}
       <aside
-        className={`no-print w-[220px] h-full flex flex-col z-30 shrink-0 transition-transform duration-300 lg:translate-x-0 ${
-          mobileMenuOpen ? 'translate-x-0 absolute top-12 bottom-0 left-0 h-[calc(100vh-3rem)]' : '-translate-x-full absolute lg:relative top-0 bottom-0 left-0'
+        className={`no-print w-[260px] max-w-[80vw] lg:w-[220px] h-[100dvh] lg:h-full flex flex-col shrink-0 transition-transform duration-300 ease-in-out fixed lg:relative top-0 bottom-0 left-0 z-50 lg:z-30 ${
+          mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
         style={{ background: 'var(--bg-sidebar)', borderRight: '1px solid var(--border)' }}
       >
         {/* Brand header */}
-        <div className="px-4 py-4 hidden lg:flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="px-4 py-3.5 lg:py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center gap-0.5">
             <span className="font-mono text-[13px] font-medium" style={{ color: 'var(--text-muted)' }}>&lt;/</span>
             <span className="text-white font-mono text-[13px] font-semibold">Tharun</span>
             <span className="font-mono text-[13px] font-medium" style={{ color: 'var(--text-muted)' }}>&gt;</span>
           </div>
-          <button
-            onClick={handleNewChat}
-            className="p-1 rounded-md cursor-pointer transition-all"
-            style={{ color: 'var(--text-muted)' }}
-            title="Home"
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <Plus size={14} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleNewChat}
+              className="p-1 rounded-md cursor-pointer transition-all"
+              style={{ color: 'var(--text-muted)' }}
+              title="Home"
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <Plus size={15} />
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="lg:hidden p-1 rounded-md text-zinc-400 hover:text-white cursor-pointer"
+              title="Close menu"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Conversation list */}
@@ -2236,7 +2270,7 @@ Generating summary response.`;
         >
         {/* Chat header — just the conversation title like Claude */}
         <div
-          className="no-print h-12 w-full flex items-center justify-between px-6 select-none shrink-0 z-20"
+          className="no-print h-12 w-full flex items-center justify-between px-4 sm:px-6 select-none shrink-0 z-20"
           style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-main)' }}
         >
           <span className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
@@ -2250,14 +2284,14 @@ Generating summary response.`;
           /* EMPTY STATE (Welcome Screen) */
           <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-12 py-8 max-w-2xl mx-auto w-full select-none relative">
             {/* Greeting block (Side-by-Side) */}
-            <div className="flex items-center justify-center gap-4 mb-8 select-none">
+            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8 select-none text-center sm:text-left">
               <div
                 className="rounded-full flex items-center justify-center text-white font-semibold shrink-0"
-                style={{ width: '56px', height: '56px', fontSize: '24px', background: '#cc6b4d', fontFamily: 'var(--font-sans, ui-sans-serif, system-ui, sans-serif)' }}
+                style={{ width: '48px', height: '48px', fontSize: '22px', background: '#cc6b4d', fontFamily: 'var(--font-sans, ui-sans-serif, system-ui, sans-serif)' }}
               >
                 T
               </div>
-              <h1 className="claude-serif text-white leading-normal tracking-normal" style={{ fontSize: '42px', fontWeight: '300' }}>
+              <h1 className="claude-serif text-white leading-tight tracking-normal text-2xl sm:text-3xl md:text-[42px]" style={{ fontWeight: '300' }}>
                 {getGreeting()}, Guest
               </h1>
             </div>
@@ -2320,7 +2354,7 @@ Generating summary response.`;
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   disabled={thinking}
-                  className="w-full bg-transparent border-none outline-none text-[14px] resize-none disabled:opacity-40"
+                  className="w-full bg-transparent border-none outline-none text-[16px] sm:text-[14px] resize-none disabled:opacity-40"
                   style={{ color: 'var(--text-primary)', height: '70px', minHeight: '50px', maxHeight: '150px', fontFamily: 'inherit' }}
                   placeholder={activeThread === 'bio' ? "Ask about Tharun, or click + to attach bio.pdf..." : "How can I help you today? (Type / for commands...)"}
                   autoComplete="off"
@@ -2407,7 +2441,7 @@ Generating summary response.`;
             {/* Messages scrolling area */}
             <div
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto px-4 md:px-12 py-8 space-y-8 select-text"
+              className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-12 py-4 sm:py-8 space-y-6 sm:space-y-8 select-text"
               style={{ background: 'var(--bg-main)' }}
             >
               {threads[activeThread]?.map((msg, idx) => {
@@ -2591,8 +2625,8 @@ Generating summary response.`;
 
             {/* Bottom input area for standard chat */}
             <div
-              className="no-print pb-5 pt-2 px-4 select-none shrink-0 z-20"
-              style={{ background: 'var(--bg-main)' }}
+              className="no-print pb-4 sm:pb-5 pt-2 px-3 sm:px-4 select-none shrink-0 z-20"
+              style={{ background: 'var(--bg-main)', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
             >
               {/* Stop generating pill */}
               <AnimatePresence>
@@ -2698,7 +2732,7 @@ Generating summary response.`;
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     disabled={thinking}
-                    className="flex-1 bg-transparent border-none outline-none text-[14px] py-1 resize-none disabled:opacity-40"
+                    className="flex-1 bg-transparent border-none outline-none text-[16px] sm:text-[14px] py-1 resize-none disabled:opacity-40"
                     style={{ color: 'var(--text-primary)', height: '24px', minHeight: '24px', maxHeight: '120px', fontFamily: 'inherit' }}
                     placeholder="How can I help you today? (Type / for commands...)"
                     autoComplete="off"
@@ -2733,7 +2767,7 @@ Generating summary response.`;
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-full md:w-[40%] h-full border-l border-[var(--border)] flex flex-col z-35 bg-[var(--bg-sidebar)] absolute right-0 top-0 md:relative no-print"
+              className="w-full md:w-[40%] h-[100dvh] md:h-full border-l border-[var(--border)] flex flex-col fixed md:relative inset-0 md:inset-auto right-0 top-0 md:top-auto bottom-0 z-50 md:z-30 bg-[var(--bg-sidebar)] no-print shadow-2xl"
             >
               {/* Artifact Header */}
               <div className="h-12 border-b border-[var(--border)] px-4 flex items-center justify-between select-none shrink-0 bg-[var(--bg-sidebar)]">
@@ -2751,7 +2785,7 @@ Generating summary response.`;
                   </button>
                   <button
                     onClick={() => { playClickTick(); setShowArtifact(false); }}
-                    className="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-zinc-400 hover:text-white cursor-pointer transition-colors"
+                    className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-md hover:bg-[var(--bg-hover)] text-zinc-400 hover:text-white cursor-pointer transition-colors active:scale-95"
                     title="Close Panel"
                   >
                     <X size={14} />
